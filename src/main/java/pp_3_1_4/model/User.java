@@ -1,6 +1,7 @@
 package pp_3_1_4.model;
 
 
+import lombok.Data;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,9 +10,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
+@Data
 @Table(name = "users")
 public class User implements UserDetails {
 
@@ -29,7 +32,6 @@ public class User implements UserDetails {
     private String lastName;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -40,11 +42,23 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String email, String password, String firstName, String lastName) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && email.equals(user.email) && password.equals(user.password) && firstName.equals(user.firstName) && lastName.equals(user.lastName) && roles.equals(user.roles);
+    }
+
+    public User(Long id, String email, String password, String firstName, String lastName, Set<Role> roles) {
         this.email = email;
+        this.id = id;
+        this.roles = roles;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+
+
     }
 
     public long getId() {
@@ -140,4 +154,11 @@ public class User implements UserDetails {
                 ", roles=" + roles +
                 '}';
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id,email, password, firstName,lastName,  roles);
+    }
 }
+
+
